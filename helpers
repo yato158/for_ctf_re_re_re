@@ -1,0 +1,335 @@
+веб:
+Burp Suite Community Edition
+
+
+осинт:
+поиск геолокации по фото: https://picarta.ai/
+https://osintframework.com/
+
+Крипта:
+шифр цезаря: https://www.dcode.fr/caesar-cipher
+sha256: https://10015.io/tools/sha256-encrypt-decrypt
+rot13: https://cryptii.com/pipes/rot13-decoder/
+Vigenère_Decode: https://gchq.github.io/CyberChef/#recipe=Vigen%C3%A8re_Decode('SOLVECRYPTO')&input=VUZKS1hRWlFVTkI
+весь base64(url, image и тд): https://base64.guru/converter/decode/image
+авто-детект шифров: https://www.dcode.fr/
+
+
+стега:
+стега декодер: https://futureboy.us/stegano/decinput.html
+Стеганографический компаратор: https://futureboy.us/stegano/compinput.html
+фулл стега: https://29a.ch/photo-forensics/#exif-meta-data
+ауди стега: https://muse-cdn.com/Audacity_Installer_via_MuseHub.exe
+
+
+revers:
+hex edit: https://hexed.it/
+
+
+брут: https://github.com/empty-jack/YAWR/tree/master
+
+
+########################################
+# 📁 FILE ANALYSIS / FORENSICS
+########################################
+
+# определить реальный тип файла (игнорит расширение)
+file file
+
+# вытащить читаемые строки (часто флаг прямо тут)
+strings file
+
+# строки длиной >=8 (меньше мусора)
+strings -n 8 file
+
+# искать base64/флаг внутри строк
+strings file | grep -i flag
+strings file | grep -E "[A-Za-z0-9+/=]{20,}"
+
+# hex dump (с адресами)
+xxd file
+
+# hex dump без адресов (удобно копировать)
+xxd -p file
+
+# восстановить файл из hex
+xxd -r -p hex.txt > out
+
+# другой вариант hex
+hexdump -C file
+
+########################################
+# 🧬 BINWALK (ОЧЕНЬ ВАЖНО)
+########################################
+
+# найти сигнатуры (zip, png, gzip внутри)
+binwalk file
+
+# извлечь найденные файлы
+binwalk -e file
+
+# рекурсивно извлечь всё (очень мощно)
+binwalk -Me file
+
+# извлечь даже без сигнатур (raw)
+binwalk --dd='.*' file
+
+########################################
+# 📦 FILE CARVING
+########################################
+
+# вытащить все типы файлов
+foremost file
+
+# только png
+foremost -t png -i file
+
+# указать output
+foremost -i file -o outdir
+
+########################################
+# 🧾 METADATA
+########################################
+
+# вся мета (часто там флаг)
+exiftool file
+
+# только интересные поля
+exiftool file | grep -i "author\|comment\|flag"
+
+# удалить метаданные
+exiftool -all= file
+
+########################################
+# 🖼️ STEGO
+########################################
+
+# информация о скрытых данных
+steghide info file.jpg
+
+# извлечь (может спросить пароль)
+steghide extract -sf file.jpg
+
+# указать output
+steghide extract -sf file.jpg -xf out.txt
+
+# перебор LSB (PNG)
+zsteg file.png
+
+# агрессивный перебор всего
+zsteg -a file.png
+
+########################################
+# 🔐 ENCODING / CRYPTO
+########################################
+
+# base64 encode
+base64 file
+
+# base64 decode
+base64 -d file
+
+# hex → ascii
+echo "68656c6c6f" | xxd -r -p
+
+# ascii → hex
+echo "hello" | xxd -p
+
+# rot13
+echo "uryyb" | tr 'a-zA-Z' 'n-za-mN-ZA-M'
+
+# openssl decrypt (если знаешь алгоритм)
+openssl enc -d -aes-256-cbc -in file -out out
+
+# openssl с паролем
+openssl enc -d -aes-256-cbc -in file -out out -k password
+
+########################################
+# 🔑 HASH CRACKING
+########################################
+
+# hashcat (md5)
+hashcat -m 0 hash.txt rockyou.txt
+
+# посмотреть поддерживаемые алгоритмы
+hashcat --help | grep "Hash modes"
+
+# john
+john hash.txt
+
+# john со словарём
+john --wordlist=rockyou.txt hash.txt
+
+# показать найденные пароли
+john --show hash.txt
+
+########################################
+# 🧬 REVERSE ENGINEERING
+########################################
+
+# быстрый анализ (строки + функции)
+strings file
+
+# libc calls (очень полезно)
+ltrace ./file
+
+# syscalls (файлы, сеть)
+strace ./file
+
+# дизассемблирование
+objdump -d file
+
+# заголовки бинарника
+objdump -x file
+
+# только строки в бинарнике
+objdump -s file
+
+# защита бинарника
+checksec --file=file
+
+# gdb
+gdb ./file
+
+# внутри gdb:
+run
+break main
+info functions
+disassemble main
+
+########################################
+# 🧠 ADVANCED RE
+########################################
+
+# radare2
+r2 file
+
+# автоанализ
+aaa
+
+# показать функции
+afl
+
+# дизасм main
+pdf @ main
+
+########################################
+# 🌐 WEB / HTTP
+########################################
+
+# GET запрос
+curl http://site.com
+
+# POST
+curl -X POST -d "user=admin&pass=123" site.com
+
+# добавить headers
+curl -H "Authorization: Bearer TOKEN" site.com
+
+# сохранить ответ
+curl site.com -o out.html
+
+########################################
+# 📡 NETWORK
+########################################
+
+# подключиться к сервису (CTF часто)
+nc host port
+
+# listener
+nc -lvnp 4444
+
+# отправить файл
+nc host port < file
+
+# nmap базовый
+nmap target
+
+# версии сервисов
+nmap -sV target
+
+# агрессивный скан
+nmap -A target
+
+########################################
+# 📡 PCAP ANALYSIS
+########################################
+
+# читать pcap
+tcpdump -r file.pcap
+
+# фильтр HTTP
+tcpdump -r file.pcap | grep HTTP
+
+# wireshark cli
+tshark -r file.pcap
+
+########################################
+# 📦 ARCHIVES
+########################################
+
+# unzip
+unzip file.zip
+
+# с паролем
+unzip -P password file.zip
+
+# tar
+tar -xvf file.tar
+tar -xvzf file.tar.gz
+
+# 7z
+7z x file
+
+########################################
+# 🔑 BRUTEFORCE
+########################################
+
+# zip brute
+fcrackzip -u -D -p rockyou.txt file.zip
+
+# hydra (ftp)
+hydra -l admin -P rockyou.txt ftp://target
+
+# hydra http
+hydra -l admin -P rockyou.txt target http-post-form "/login:user=^USER^&pass=^PASS^:F=incorrect"
+
+########################################
+# ⚡ REAL CTF WORKFLOW
+########################################
+
+# 1. всегда начинай так
+file file
+strings file
+binwalk -Me file
+exiftool file
+
+# 2. если изображение
+zsteg file.png
+steghide extract -sf file.png
+
+# 3. если бинарник
+ltrace ./file
+strace ./file
+checksec --file=file
+gdb ./file
+
+# 4. если pcap
+tshark -r file.pcap
+strings file.pcap
+
+########################################
+# 🧠 PRO TIPS
+########################################
+
+# искать base64
+grep -E "[A-Za-z0-9+/=]{20,}" file
+
+# искать флаг
+grep -i "flag" -r .
+
+# искать скрытые файлы
+ls -la
+
+# искать по системе
+find / -name "*.txt" 2>/dev/null
